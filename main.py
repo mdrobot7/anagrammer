@@ -6,12 +6,16 @@
 
 #Biggest challenge: Making a grammatically correct phrase.
 
+#todo: if an anagram is a fail, clear the input word and retry, but with DIFFERENT dict words. So, find some way to track the dict words already used.
+
 import time
 import sys
 import random
 
 if len(sys.argv) > 2):
   print("Please put all arguments in one term. Press Ctrl+C to exit.")
+  while True:
+        time.sleep(0.5)
 
 try:
     dict = open(dict.txt, 'r')
@@ -21,21 +25,32 @@ except FileNotFoundError:
   
 word = sys.argv[1] #the word to be anagrammed
 word = word.replace(" ", "") #get rid of all of the spaces
+lastWord = word #tracks the last instance of 'word' used
 
-#dict.readlines() #this might be bad, since it loads all lines of the file into a list (memory). That would be a lot of RAM...
+result = [] #append values to the end of these to set stuff.
+usedWords = []
+lineCounter = -1
 
 if sys.argv[2].find("r") >= 0:
-    while True:
-        startLetterPos = random.randint(0, len(sys.argv[1]))
-        startLetter = sys.argv[1][startLetterPos]
-        line = dict.readline()
-        if line.find(startLetter) == 0:
-            #pseudocode:
-            #take the current dict word/line, and see if the next letter in the line is present in word. repeat until you get a no, and then increment the word/line.
-            while True:
-                for i in word:
-                    if line.find(word[i]) >= 0:
-                        word = word[0:i] + word[i + 1:]
-                        
-        else:
-            continue
+    startLetterPos = random.randint(0, len(sys.argv[1]))
+else:
+    startLetterPos = 0
+startLetter = sys.argv[1][startLetterPos]
+
+while True:
+    lineCounter += 1
+    line = dict.readline()
+    if usedWords.index(lineCounter) >= 0: #if the current word/line is in the usedWords list, then skip it.
+        continue
+    if line.find(startLetter) == 0:
+        for i in line:
+            if word.find(line[i]) >= 0: #searches for the current letter of the dict file in the input word. the word should have all of the letters of the dict word.
+                word = word[0:word.find(line[i])] + word[word.find(line[i]) + 1:]
+            else:
+                word = lastWord
+                break
+        else: #will only run if the for loop finishes correctly
+            result.append(line)
+            dict.seek(0) #reset the readline at 0
+    if not word:
+        break
