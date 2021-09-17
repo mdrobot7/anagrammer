@@ -13,9 +13,12 @@ import sys
 import random
 
 if len(sys.argv) > 3:
-  print("Please put all arguments in one term. Press Ctrl+C to exit.")
-  while True:
-        time.sleep(0.5)
+    print("Please put all arguments in one term. Exiting...")
+    raise SystemExit
+elif len(sys.argv) < 3:
+    print("""Not enough arguments. Make sure to specify the string to anagram and the parameters,
+or the string to anagram and a hyphen [-] if there are no parameters. Exiting...""")
+    raise SystemExit
 
 try:
     dict = open("dictionary.txt", 'r')
@@ -66,6 +69,21 @@ failFlag = False
 #reset the word, run the entire loop over again to find another one (if the user/args specify)
 
 
+
+#OPTIMIZATION NOTES/PSEUDOCODE:
+
+#try file.readlines() instead of readline(), loading the entire thing into a list might make it faster
+#after loading the file into a list, do a "rough cut" pass and list.pop() any elements that have "bad letters" (letters that are in the dict, but not in the anagram word)
+#list.pop() any words that are longer than the anagram word
+
+#after getting rid of as many extraneous words as possible, start with the first word, remove its chars from the anagram word, and anagram what is left
+#i.e. if the word was "conversation" and the first word in the list was "ace", the result would be "onvrstion". then that would be anagrammed with the rest of the list.
+#repeat, going down the list until it reaches the end
+
+#I think the slowest parts of the code are the constant checking of letters in bad words, reading the data off of the drive instead of out of RAM, and the super large dict data set.
+#the first two are solved by doing the "rough cut" and using file.readlines() into a list, but the last one would require deleting stuff from the dict.
+
+
 while True:
     failFlag = False
     line = dict.readline()
@@ -79,14 +97,13 @@ while True:
             print("No anagrams could be found. Sorry!")
             break
         dict.seek(0) #bring the seek back to the beginning
-        print("asdfasdf")
         failFlag = True
         continue
     for i in range(0, len(excluded)): #check that the current line isn't in the excluded list
         if line == excluded[i]:
             failFlag = True
             break
-    if line.find(word[0]) >= 0 and not failFlag and len(line) > 1: #can also use if word[0] in line
+    if word[0] in line and not failFlag and len(line) > 1:
         for i in range(len(line)):
             if word.find(line[i]) >= 0:
                 word = word[0:word.find(line[i])] + word[word.find(line[i]) + 1:] #if the letter is found, remove it.
@@ -99,10 +116,18 @@ while True:
             lastWord = word
             result.append(line) #add the current word to the results array
             dict.seek(0)
-            print("Word successful!")
-            print(line)
-            print(word)
-            print("")
+            #print("Word successful!")
+            #print(line)
+            #print(word)
+            #print("")
         if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
             print(result)
-            break
+            print("")
+            if "a" in sys.argv[2]:
+                excluded.extend(result) #make all of the results now excluded, so the results have to be entirely different
+                result.clear() #clear the list
+                dict.seek(0)
+                word = _word
+                lastWord = _word
+            else:
+                break
