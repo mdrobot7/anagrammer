@@ -12,20 +12,33 @@ import time
 import sys
 import random
 
-if len(sys.argv) > 2):
+if len(sys.argv) > 3:
   print("Please put all arguments in one term. Press Ctrl+C to exit.")
   while True:
         time.sleep(0.5)
 
 try:
-    dict = open(dict.txt, 'r')
-    prof = open(prof.txt, 'r') #combine the dict and prof files into one large file
+    dict = open("dictionary.txt", 'r')
+    #prof = open(profane.txt, 'r') #combine the dict and prof files into one large file
 except FileNotFoundError:
     print("Dictionary files not found!")
     raise SystemExit
   
-word = sys.argv[1] #the word to be anagrammed
-word = word.replace(" ", "") #get rid of all of the spaces
+_word = sys.argv[1] #the word to be anagrammed
+if _word[-4:] == ".txt": #if the last 4 chars are .txt
+    try:
+        _word = open(_word, 'r') #implement this later
+    except FileNotFoundError:
+        print("Text file not found!")
+        raise SystemExit
+else:
+    _word = _word.replace(" ", "") #get rid of all of the spaces
+    word = _word
+    lastWord = _word
+
+result = [] #words that are part of the anagram
+excluded = [] #words that can't be part of the anagram (because if they are chosen, then the anagram can't be finished)
+failFlag = False
 
 #pseudocode for the algorithm:
 
@@ -53,44 +66,43 @@ word = word.replace(" ", "") #get rid of all of the spaces
 #reset the word, run the entire loop over again to find another one (if the user/args specify)
 
 
-
-
-
-
-
-
-
-
-
-
-#======================================================================================================================================#
-
-#lastWord = word #tracks the last instance of 'word' used
-
-#result = [] #append values to the end of these to set stuff.
-#usedWords = []
-#lineCounter = -1
-
-#if sys.argv[2].find("r") >= 0:
-#    startLetterPos = random.randint(0, len(sys.argv[1]))
-#else:
-#    startLetterPos = 0
-#startLetter = sys.argv[1][startLetterPos]
-
-#while True:
-#    lineCounter += 1
-#    line = dict.readline()
-#    if usedWords.index(lineCounter) >= 0: #if the current word/line is in the usedWords list, then skip it.
-#        continue
-#    if line.find(startLetter) == 0:
-#        for i in line:
-#            if word.find(line[i]) >= 0: #searches for the current letter of the dict file in the input word. the word should have all of the letters of the dict word.
-#                word = word[0:word.find(line[i])] + word[word.find(line[i]) + 1:]
-#            else:
-#                word = lastWord
-#                break
-#        else: #will only run if the for loop finishes correctly
-#            result.append(line)
-#            dict.seek(0) #reset the readline at 0
-#    if not word:
-#        break
+while True:
+    failFlag = False
+    line = dict.readline()
+    line = line.strip() #remove newlines and spaces
+    if line == "": #if line is an empty string, meaning it reached the end of the file
+        if len(result) > 0:
+            excluded.append(result.pop()) #removes the last value (the most recent value can't be used, because it prevents the next part of the anagram from being made), excludes it
+            word = lastWord + excluded[-1] #concatenates the lastWord and the newly excluded word to "undo" the subtraction of the excluded word (since it doesn't work)
+            lastWord = word #reset lastWord
+        else:
+            print("No anagrams could be found. Sorry!")
+            break
+        dict.seek(0) #bring the seek back to the beginning
+        print("asdfasdf")
+        failFlag = True
+        continue
+    for i in range(0, len(excluded)): #check that the current line isn't in the excluded list
+        if line == excluded[i]:
+            failFlag = True
+            break
+    if line.find(word[0]) >= 0 and not failFlag and len(line) > 1: #can also use if word[0] in line
+        for i in range(len(line)):
+            if word.find(line[i]) >= 0:
+                word = word[0:word.find(line[i])] + word[word.find(line[i]) + 1:] #if the letter is found, remove it.
+            else:
+                failFlag = True
+                break
+        if failFlag:
+            word = lastWord #reset the word
+        elif not failFlag: #if the for loop finished correctly, and the current 'line' can be part of the anagram
+            lastWord = word
+            result.append(line) #add the current word to the results array
+            dict.seek(0)
+            print("Word successful!")
+            print(line)
+            print(word)
+            print("")
+        if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
+            print(result)
+            break
