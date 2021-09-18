@@ -83,6 +83,10 @@ failFlag = False
 #I think the slowest parts of the code are the constant checking of letters in bad words, reading the data off of the drive instead of out of RAM, and the super large dict data set.
 #the first two are solved by doing the "rough cut" and using file.readlines() into a list, but the last one would require deleting stuff from the dict.
 
+#PROBLEM: As the dict is iterated over, every word will be slowly excluded from it. This is because if the word 'conversation' is the input, and the first two words are
+#'ace' and 'son', but the remaining 'word' cannot form an anagram, the word 'son' will be excluded because it was second. the problem is that then, it will never be used
+#as a first word. FIX THIS.
+
 
 while True:
     failFlag = False
@@ -116,10 +120,6 @@ while True:
             lastWord = word
             result.append(line) #add the current word to the results array
             dict.seek(0)
-            #print("Word successful!")
-            #print(line)
-            #print(word)
-            #print("")
         if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
             print(result)
             print("")
