@@ -37,10 +37,10 @@ if _word[-4:] == ".txt": #if the last 4 chars are .txt
 else:
     _word = _word.replace(" ", "") #get rid of all of the spaces
     word = _word
-    lastWord = _word
+    lastWord = [_word] #lastword list
 
 result = [] #words that are part of the anagram
-excluded = [] #words that can't be part of the anagram (because if they are chosen, then the anagram can't be finished)
+c = [0] #a list of counter variables
 failFlag = False
 
 #pseudocode for the algorithm:
@@ -87,47 +87,81 @@ failFlag = False
 #'ace' and 'son', but the remaining 'word' cannot form an anagram, the word 'son' will be excluded because it was second. the problem is that then, it will never be used
 #as a first word. FIX THIS.
 
+lines = dict.readlines() #read all lines into a list
+
+while True: #"rough cut" of the dictionary - remove any dict words with "bad" letters
+    if c[0] >= len(lines):
+        break
+    lines[c[0]] = lines[c[0]].strip("\n")
+    if len(lines[c[0]]) == 1: #get rid of 1 character words
+        lines.pop(c[0])
+        continue
+    for i in range(len(lines[c[0]])):
+        if word.find(lines[c[0]][i]) < 0: #if the ii'th letter of the current line isn't in the word, delete the line from the dict and break the loop
+            lines.pop(c[0])
+            break
+    else: #only increments the index if the for loop runs successfully
+        c[0] += 1
+c[0] = 0            
+while True: #"fine cut" of the dictionary - remove any remaining dict words that don't work for other reasons (duplicate letters, etc)
+    if c[0] >= len(lines):
+        break
+    for i in range(len(lines[c[0]])):
+        if word.find(lines[c[0]][i]) >= 0:
+            word = word[0:word.find(lines[c[0]][i])] + word[word.find(lines[c[0]][i]) + 1:] #if the letter is found, remove it.
+        else:
+            lines.pop(c[0])
+            word = lastWord[0] #reset the word
+            break
+    else:
+        c[0] += 1
+
+#at this point, all words in 'lines' should work as a first word in the anagram.
+
+print(lines)
+print("")
+print("")
+
+
+c[0] = 0
 
 while True:
-    failFlag = False
-    line = dict.readline()
-    line = line.strip() #remove newlines and spaces
-    if line == "": #if line is an empty string, meaning it reached the end of the file
-        if len(result) > 0:
-            excluded.append(result.pop()) #removes the last value (the most recent value can't be used, because it prevents the next part of the anagram from being made), excludes it
-            word = lastWord + excluded[-1] #concatenates the lastWord and the newly excluded word to "undo" the subtraction of the excluded word (since it doesn't work)
-            lastWord = word #reset lastWord
+    for i in range(len(lines[c[len(result)]])):
+        if word.find(lines[c[len(result)]][i]) >= 0:
+            word = word[0:word.find(lines[c[len(result)]][i])] + word[word.find(lines[c[len(result)]][i]) + 1:] #if the letter is found, remove it.
         else:
-            print("No anagrams could be found. Sorry!")
-            break
-        dict.seek(0) #bring the seek back to the beginning
-        failFlag = True
-        continue
-    for i in range(0, len(excluded)): #check that the current line isn't in the excluded list
-        if line == excluded[i]:
             failFlag = True
             break
-    if word[0] in line and not failFlag and len(line) > 1:
-        for i in range(len(line)):
-            if word.find(line[i]) >= 0:
-                word = word[0:word.find(line[i])] + word[word.find(line[i]) + 1:] #if the letter is found, remove it.
+    if failFlag:
+        c[len(result)] += 1
+        failFlag = False
+        if c[len(result)] >= len(lines): #if the counter reached the end of lines, aka reached the end of the dict
+            if len(result) > 0: #if a result can be removed, then remove it
+                result.pop()
+                c[len(result)] += 1
             else:
-                failFlag = True
-                break
-        if failFlag:
-            word = lastWord #reset the word
-        elif not failFlag: #if the for loop finished correctly, and the current 'line' can be part of the anagram
-            lastWord = word
-            result.append(line) #add the current word to the results array
-            dict.seek(0)
-        if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
-            print(result)
-            print("")
-            if "a" in sys.argv[2]:
-                excluded.extend(result) #make all of the results now excluded, so the results have to be entirely different
-                result.clear() #clear the list
-                dict.seek(0)
-                word = _word
-                lastWord = _word
-            else:
-                break
+                print("No anagrams could be found, sorry!")
+                raise SystemExit
+        word = lastWord[len(result)]
+    elif not failFlag:
+        result.append(lines[c[len(result)]])
+        if len(c) == len(result): c.append(0) #add another index to the counter list
+        else: c[len(result)] = 0 #if the index exists, reset it.
+        if len(lastWord) == len(result): lastWord.append(word)
+        else: lastWord[len(result)] = word #if the index exists, use it
+    if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
+        print(result, end = " " )
+        print(c)
+        #print("")
+        if "a" in sys.argv[2]:
+            result.pop() #remove the last result to give space in the word
+            lastWord.pop() #get rid of the empty string in the last index of lastWord
+            word = lastWord[len(result)]
+            c[len(result)] += 1 #move on to the next word
+            if c[len(result)] >= len(lines): #if increasing the counter hits the end of the dict
+                result.pop() #get rid of the next result back in the list
+                lastWord.pop()
+                word = lastWord[len(result)]
+                c[len(result)] += 1
+        else: #if the args don't specify to print all, then exit the program
+            raise SystemExit
