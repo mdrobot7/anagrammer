@@ -120,48 +120,73 @@ while True: #"fine cut" of the dictionary - remove any remaining dict words that
 
 print(lines)
 print("")
+print(len(lines))
 print("")
 
 
 c[0] = 0
 
 while True:
-    for i in range(len(lines[c[len(result)]])):
-        if word.find(lines[c[len(result)]][i]) >= 0:
-            word = word[0:word.find(lines[c[len(result)]][i])] + word[word.find(lines[c[len(result)]][i]) + 1:] #if the letter is found, remove it.
-        else:
-            failFlag = True
-            break
-    if failFlag:
-        c[len(result)] += 1
-        failFlag = False
-        if c[len(result)] >= len(lines): #if the counter reached the end of lines, aka reached the end of the dict
-            if len(result) > 0: #if a result can be removed, then remove it
-                result.pop()
-                c[len(result)] += 1
-            else:
-                print("No anagrams could be found, sorry!")
-                raise SystemExit
-        word = lastWord[len(result)]
-    elif not failFlag:
-        result.append(lines[c[len(result)]])
-        if len(c) == len(result): c.append(0) #add another index to the counter list
-        else: c[len(result)] = 0 #if the index exists, reset it.
-        if len(lastWord) == len(result): lastWord.append(word)
-        else: lastWord[len(result)] = word #if the index exists, use it
-    if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
-        print(result, end = " " )
+    try:
+        x = len(lines[c[len(result)]])
+    except IndexError:
+        print("EXCEPTION!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!")
+        #print(len(lines[c[len(result)]]))
+        #print(lines[c[len(result)]])
+        print(c[len(result)])
+        print(len(result))
+        print(result)
         print(c)
-        #print("")
-        if "a" in sys.argv[2]:
-            result.pop() #remove the last result to give space in the word
-            lastWord.pop() #get rid of the empty string in the last index of lastWord
-            word = lastWord[len(result)]
-            c[len(result)] += 1 #move on to the next word
-            if c[len(result)] >= len(lines): #if increasing the counter hits the end of the dict
-                result.pop() #get rid of the next result back in the list
-                lastWord.pop()
-                word = lastWord[len(result)]
+        print(lastWord)
+        print(failedFlag)
+        print(c[len(result)] >= len(lines) - 1)
+        raise SystemExit
+    else:
+        for i in range(len(lines[c[len(result)]])):
+            if word.find(lines[c[len(result)]][i]) >= 0:
+                word = word[0:word.find(lines[c[len(result)]][i])] + word[word.find(lines[c[len(result)]][i]) + 1:] #if the letter is found, remove it.
+            else:
+                failFlag = True
+                break
+        if failFlag:
+            failedFlag = True
+            failFlag = False
+            if c[len(result)] >= len(lines) - 1: #if the counter reached the end of lines, aka reached the end of the dict (-1 offset because the ++ hasn't happened yet, in else)
+                if len(result) > 0: #if a result can be removed, then remove it
+                    result.pop()
+                    c[len(result)] += 1
+                    c[len(result) + 1] = 0 #clear the newly vacated counter spot
+                    if c[len(result)] >= len(lines): #if the result is popped, and then the last term of the resulting list happens to be the last word in dict, this handles it
+                        result.pop()
+                        c[len(result)] += 1
+                        c[len(result) + 1] = 0 #clear the newly vacated counter spot
+                else:
+                    print("No anagrams could be found, sorry!")
+                    raise SystemExit
+            else:
                 c[len(result)] += 1
-        else: #if the args don't specify to print all, then exit the program
-            raise SystemExit
+            word = lastWord[len(result)]
+        elif not failFlag:
+            failedFlag = False
+            result.append(lines[c[len(result)]])
+            if len(c) == len(result): c.append(0) #add another index to the counter list
+            else: c[len(result)] = 0 #if the index exists, reset it.
+            if len(lastWord) == len(result): lastWord.append(word)
+            else: lastWord[len(result)] = word #if the index exists, use it
+        if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
+            print(result, end = " " )
+            print(c)
+            #print("")
+            failFlag = False
+            if "a" in sys.argv[2]:
+                result.pop() #remove the last result to give space in the word
+                lastWord.pop() #get rid of the empty string in the last index of lastWord
+                word = lastWord[len(result)]
+                c[len(result)] += 1 #move on to the next word
+                if c[len(result)] >= len(lines): #if increasing the counter hits the end of the dict
+                    result.pop() #get rid of the next result back in the list
+                    lastWord.pop()
+                    word = lastWord[len(result)]
+                    c[len(result)] += 1
+            else: #if the args don't specify to print all, then exit the program
+                raise SystemExit
