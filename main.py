@@ -153,13 +153,13 @@ while True:
             failFlag = False
             if c[len(result)] >= len(lines) - 1: #if the counter reached the end of lines, aka reached the end of the dict (-1 offset because the ++ hasn't happened yet, in else)
                 if len(result) > 0: #if a result can be removed, then remove it
-                    result.pop()
-                    c[len(result)] += 1
-                    c[len(result) + 1] = 0 #clear the newly vacated counter spot
-                    if c[len(result)] >= len(lines): #if the result is popped, and then the last term of the resulting list happens to be the last word in dict, this handles it
-                        result.pop()
+                    while c[len(result)] >= len(lines) - 1: #go back to a counter that has space to count up
+                        if len(result) > 0: result.pop()
+                        else:
+                            print("Complete.")
+                            raise SystemExit
                         c[len(result)] += 1
-                        c[len(result) + 1] = 0 #clear the newly vacated counter spot
+                        c[len(result) + 1] = 0 #clear the now-vacated counter
                 else:
                     print("No anagrams could be found, sorry!")
                     raise SystemExit
