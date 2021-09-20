@@ -108,7 +108,6 @@ while True:
         else: lastWord[len(result)] = word #if the index exists, use it
     if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
         print(result)
-        #print("")
         failFlag = False
         if "a" in sys.argv[2]:
             result.pop() #remove the last result to give space in the word
