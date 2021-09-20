@@ -2,7 +2,7 @@
 #Author: Michael Drobot
 #https://github.com/mdrobot7
 
-#Args: -p = profane; -a = all; -l = alphabetical order; -r = random order; -c = grammatically correct;
+#Args: -p = profane; -a = all; -r = random order; -c = grammatically correct; -f = file to output results to
 
 #Biggest challenge: Making a grammatically correct phrase.
 
@@ -18,9 +18,14 @@ elif len(sys.argv) < 3:
 or the string to anagram and a hyphen [-] if there are no parameters. Exiting...""")
     raise SystemExit
 
+if "r" in sys.argv[2] and "a" in sys.argv[2]:
+    print("Random and All arguments are mutually exclusive. Exiting...")
+    raise SystemExit
+
 try:
     dict = open("dictionary.txt", 'r')
-    #prof = open(profane.txt, 'r') #combine the dict and prof files into one large file
+    if "p" in sys.argv[2]: #if profane is in the args
+        dict = open(profane.txt, 'r') #combine the dict and prof files into one large file
 except FileNotFoundError:
     print("Dictionary files not found!")
     raise SystemExit
@@ -73,6 +78,8 @@ while True: #"fine cut" of the dictionary - remove any remaining dict words that
 #at this point, all words in 'lines' should work as a first word in the anagram.
 
 c[0] = 0
+if "r" in sys.argv[2]:
+    c[0] = random.randint(0, len(lines))
 
 while True:
     for i in range(len(lines[c[len(result)]])):
@@ -104,6 +111,7 @@ while True:
         result.append(lines[c[len(result)]])
         if len(c) == len(result): c.append(0) #add another index to the counter list
         else: c[len(result)] = 0 #if the index exists, reset it.
+        if "r" in sys.argv[2]: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
         if len(lastWord) == len(result): lastWord.append(word)
         else: lastWord[len(result)] = word #if the index exists, use it
     if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
