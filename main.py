@@ -14,21 +14,28 @@ c = [0] #a list of counter variables
 failFlag = False
 word = ""
 lastWord = ""
+args = "" #new args string, makes processing later easier
+resultFileArg = 0
 
 #====================================================================================================================================================================================#
 
-if len(sys.argv) < 3:
-    print("""Not enough arguments. Make sure to specify the string to anagram and the parameters,
-or the string to anagram and a hyphen [-] if there are no parameters. Exiting...""")
-    raise SystemExit
-
-if "r" in sys.argv[2] and "a" in sys.argv[2]:
+for i in range(2, len(sys.argv)): #start after the input word arg, process args and put them all in one string
+    if not sys.argv[i][0] == "-": #if the arg doesn't start with a hyphen, skip it
+        continue
+    if "a" in sys.argv[i]: args = args + "a"
+    if "p" in sys.argv[i]: args = args + "p"
+    if "r" in sys.argv[i]: args = args + "r"
+    if "o" in sys.argv[i]:
+        args = args + "o"
+        resultFileArg = i #set a variable with the arg that the result file name is in. makes it easier later.
+        
+if "r" in args and "a" in args:
     print("Random and All arguments are mutually exclusive. Exiting...")
     raise SystemExit
 
 try:
     dict = open("dictionary.txt", 'r')
-    if "p" in sys.argv[2]: #if profane is in the args
+    if "p" in args: #if profane is in the args
         dict = open("dictionary-profane.txt", 'r') #combine the dict and prof files into one large file
 except FileNotFoundError:
     print("Dictionary files not found!")
@@ -56,14 +63,8 @@ else:
     word = _word
     lastWord = [_word] #lastword list
 
-try:
-    x = sys.argv.index("-o")
-except ValueError:
-    time.sleep(0.001) #do nothing, since '-o' wasn't in the args
-else:
-    resultFile = open(sys.argv[x + 1], 'w') #if -f was present, create an output file with the name specified
-    sys.argv[2] = sys.argv[2] + "o" #add f to arg group, helps later on
-    del x
+if "o" in args:
+    resultFile = open(sys.argv[resultFileArg], 'w') #if -f was present, create an output file with the name specified
 
 #====================================================================================================================================================================================#
 
@@ -101,7 +102,7 @@ while True: #"fine cut" of the dictionary - remove any remaining dict words that
 #====================================================================================================================================================================================#
 
 c[0] = 0
-if "r" in sys.argv[2]:
+if "r" in args:
     c[0] = random.randint(0, len(lines))
 
 while True:
@@ -134,11 +135,11 @@ while True:
         result.append(lines[c[len(result)]])
         if len(c) == len(result): c.append(0) #add another index to the counter list
         else: c[len(result)] = 0 #if the index exists, reset it.
-        if "r" in sys.argv[2]: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
+        if "r" in args[2]: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
         if len(lastWord) == len(result): lastWord.append(word)
         else: lastWord[len(result)] = word #if the index exists, use it
     if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
-        if "o" in sys.argv[2]:
+        if "o" in args[2]:
             resultFile.write("[")
             for i in range(len(result)):
                 resultFile.write(result[i]) #if 'o' is in the args, then write the result to a file instead of to the terminal
@@ -148,7 +149,7 @@ while True:
         else:
             print(result)
         failFlag = False
-        if "a" in sys.argv[2]:
+        if "a" in args[2]:
             result.pop() #remove the last result to give space in the word
             lastWord.pop() #get rid of the empty string in the last index of lastWord
             word = lastWord[len(result)]
