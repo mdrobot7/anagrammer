@@ -2,18 +2,22 @@
 #Author: Michael Drobot
 #https://github.com/mdrobot7
 
-#Args: -p = profane; -a = all; -r = random order; -c = grammatically correct; -f = file to output results to
-
-#Biggest challenge: Making a grammatically correct phrase.
+#Args: -p = profane; -a = all; -r = random order; -o = output results to file
+#Add .txt to the end of the input word to make the output dump to a text file
 
 import time
 import sys
 import random
 
-if len(sys.argv) > 3:
-    print("Please put all arguments in one term. Exiting...")
-    raise SystemExit
-elif len(sys.argv) < 3:
+result = [] #words that are part of the anagram
+c = [0] #a list of counter variables
+failFlag = False
+word = ""
+lastWord = ""
+
+#====================================================================================================================================================================================#
+
+if len(sys.argv) < 3:
     print("""Not enough arguments. Make sure to specify the string to anagram and the parameters,
 or the string to anagram and a hyphen [-] if there are no parameters. Exiting...""")
     raise SystemExit
@@ -25,26 +29,43 @@ if "r" in sys.argv[2] and "a" in sys.argv[2]:
 try:
     dict = open("dictionary.txt", 'r')
     if "p" in sys.argv[2]: #if profane is in the args
-        dict = open(profane.txt, 'r') #combine the dict and prof files into one large file
+        dict = open("dictionary-profane.txt", 'r') #combine the dict and prof files into one large file
 except FileNotFoundError:
     print("Dictionary files not found!")
     raise SystemExit
   
 _word = sys.argv[1] #the word to be anagrammed
-if _word[-4:] == ".txt": #if the last 4 chars are .txt
+if _word[-4:] == ".txt": #if the last 4 chars are .txt, then it is an INPUT FILE
     try:
         _word = open(_word, 'r') #implement this later
     except FileNotFoundError:
         print("Text file not found!")
         raise SystemExit
+    else:
+        word = _word.readlines() #make a list of all of the words in the input text file
+        while True:
+            word[0] = word[0].replace(" ", "") #remove spaces and newline chars
+            word[0] = word[0].strip("\n")
+            lastWord = lastWord + word[0] #add the last element of word to lastWord repeatedly, until all of the elements of word[] are in lastWord as one large string
+            if len(word) > 0: word.pop(0) #remove the last element of word
+            if len(word) == 0: break
+        word = lastWord #set word to the large string
+        lastWord = [word] #reset lastWord, change it to an array
 else:
     _word = _word.replace(" ", "") #get rid of all of the spaces
     word = _word
     lastWord = [_word] #lastword list
 
-result = [] #words that are part of the anagram
-c = [0] #a list of counter variables
-failFlag = False
+try:
+    x = sys.argv.index("-o")
+except ValueError:
+    time.sleep(0.001) #do nothing, since '-o' wasn't in the args
+else:
+    resultFile = open(sys.argv[x + 1], 'w') #if -f was present, create an output file with the name specified
+    sys.argv[2] = sys.argv[2] + "o" #add f to arg group, helps later on
+    del x
+
+#====================================================================================================================================================================================#
 
 lines = dict.readlines() #read all lines into a list
 
@@ -76,6 +97,8 @@ while True: #"fine cut" of the dictionary - remove any remaining dict words that
         c[0] += 1
 
 #at this point, all words in 'lines' should work as a first word in the anagram.
+
+#====================================================================================================================================================================================#
 
 c[0] = 0
 if "r" in sys.argv[2]:
@@ -115,7 +138,15 @@ while True:
         if len(lastWord) == len(result): lastWord.append(word)
         else: lastWord[len(result)] = word #if the index exists, use it
     if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
-        print(result)
+        if "o" in sys.argv[2]:
+            resultFile.write("[")
+            for i in range(len(result)):
+                resultFile.write(result[i]) #if 'o' is in the args, then write the result to a file instead of to the terminal
+                if i == len(result) - 1: break #don't print the comma
+                resultFile.write(", ")
+            resultFile.write("]\n")
+        else:
+            print(result)
         failFlag = False
         if "a" in sys.argv[2]:
             result.pop() #remove the last result to give space in the word
