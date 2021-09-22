@@ -53,6 +53,7 @@ if _word[-4:] == ".txt": #if the last 4 chars are .txt, then it is an INPUT FILE
         while True:
             word[0] = word[0].replace(" ", "") #remove spaces and newline chars
             word[0] = word[0].strip("\n")
+            word[0] = word[0].lower() #make the input all lowercase
             lastWord = lastWord + word[0] #add the last element of word to lastWord repeatedly, until all of the elements of word[] are in lastWord as one large string
             if len(word) > 0: word.pop(0) #remove the last element of word
             if len(word) == 0: break
@@ -60,6 +61,7 @@ if _word[-4:] == ".txt": #if the last 4 chars are .txt, then it is an INPUT FILE
         lastWord = [word] #reset lastWord, change it to an array
 else:
     _word = _word.replace(" ", "") #get rid of all of the spaces
+    _word = _word.lower() #make sure the word is all lowercase
     word = _word
     lastWord = [_word] #lastword list
 
