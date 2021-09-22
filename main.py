@@ -27,7 +27,7 @@ for i in range(2, len(sys.argv)): #start after the input word arg, process args 
     if "r" in sys.argv[i]: args = args + "r"
     if "o" in sys.argv[i]:
         args = args + "o"
-        resultFileArg = i #set a variable with the arg that the result file name is in. makes it easier later.
+        resultFileArg = i + 1 #set a variable with the arg that the result file name is in. makes it easier later.
         
 if "r" in args and "a" in args:
     print("Random and All arguments are mutually exclusive. Exiting...")
@@ -64,7 +64,11 @@ else:
     lastWord = [_word] #lastword list
 
 if "o" in args:
-    resultFile = open(sys.argv[resultFileArg], 'w') #if -f was present, create an output file with the name specified
+    try:
+        resultFile = open(sys.argv[resultFileArg], 'w') #if -f was present, create an output file with the name specified
+    except:
+        print("Output file not specified. Exiting...")
+        raise SystemExit
 
 #====================================================================================================================================================================================#
 
@@ -121,11 +125,14 @@ while True:
                     if len(result) > 0: result.pop()
                     else:
                         print("Complete.")
+                        if "o" in args:
+                            resultFile.close()
                         raise SystemExit
                     c[len(result)] += 1
                     c[len(result) + 1] = 0 #clear the now-vacated counter
             else:
                 print("No anagrams could be found, sorry!")
+                resultFile.close()
                 raise SystemExit
         else:
             c[len(result)] += 1
@@ -135,11 +142,11 @@ while True:
         result.append(lines[c[len(result)]])
         if len(c) == len(result): c.append(0) #add another index to the counter list
         else: c[len(result)] = 0 #if the index exists, reset it.
-        if "r" in args[2]: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
+        if "r" in args: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
         if len(lastWord) == len(result): lastWord.append(word)
         else: lastWord[len(result)] = word #if the index exists, use it
     if word == "": #if word is empty, meaning all of the letters have been taken out of it (used)
-        if "o" in args[2]:
+        if "o" in args:
             resultFile.write("[")
             for i in range(len(result)):
                 resultFile.write(result[i]) #if 'o' is in the args, then write the result to a file instead of to the terminal
@@ -149,7 +156,7 @@ while True:
         else:
             print(result)
         failFlag = False
-        if "a" in args[2]:
+        if "a" in args:
             result.pop() #remove the last result to give space in the word
             lastWord.pop() #get rid of the empty string in the last index of lastWord
             word = lastWord[len(result)]
