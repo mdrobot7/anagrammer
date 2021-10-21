@@ -11,7 +11,7 @@ import random
 
 result = [] #words that are part of the anagram
 c = [0] #a list of counter variables
-failFlag = False
+failFlag = False #flag to check if the main algorithm's for loop completed
 word = ""
 lastWord = ""
 args = "" #new args string, makes processing later easier
@@ -76,6 +76,8 @@ if "o" in args:
 
 lines = dict.readlines() #read all lines into a list
 
+#c[0] for the next 2 loops is the line of the dictionary list that the program is on.
+
 while True: #"rough cut" of the dictionary - remove any dict words with "bad" letters
     if c[0] >= len(lines):
         break
@@ -83,19 +85,21 @@ while True: #"rough cut" of the dictionary - remove any dict words with "bad" le
     if len(lines[c[0]]) == 1: #get rid of 1 character words
         lines.pop(c[0])
         continue
-    for i in range(len(lines[c[0]])):
-        if word.find(lines[c[0]][i]) < 0: #if the ii'th letter of the current line isn't in the word, delete the line from the dict and break the loop
+    for i in range(len(lines[c[0]])): #range(length of the current c[0]'th line of the dictionary)
+        if word.find(lines[c[0]][i]) < 0: #if the i'th letter of the current line isn't in the word, delete the line from the dict and break the loop
             lines.pop(c[0])
             break
     else: #only increments the index if the for loop runs successfully
         c[0] += 1
-c[0] = 0            
+c[0] = 0
+
+#c[0] is the line of the dictionary list that the program is on
 while True: #"fine cut" of the dictionary - remove any remaining dict words that don't work for other reasons (duplicate letters, etc)
     if c[0] >= len(lines):
         break
-    for i in range(len(lines[c[0]])):
-        if word.find(lines[c[0]][i]) >= 0:
-            word = word[0:word.find(lines[c[0]][i])] + word[word.find(lines[c[0]][i]) + 1:] #if the letter is found, remove it.
+    for i in range(len(lines[c[0]])): #range(length of the current word)
+        if word.find(lines[c[0]][i]) >= 0: #find the i'th letter of the dictionary line in the input word
+            word = word[0:word.find(lines[c[0]][i])] + word[word.find(lines[c[0]][i]) + 1:] #if the letter is found, remove it from the input word
         else:
             lines.pop(c[0])
             word = lastWord[0] #reset the word
@@ -112,14 +116,17 @@ if "r" in args:
     c[0] = random.randint(0, len(lines))
 
 while True:
-    for i in range(len(lines[c[len(result)]])):
-        if word.find(lines[c[len(result)]][i]) >= 0:
-            word = word[0:word.find(lines[c[len(result)]][i])] + word[word.find(lines[c[len(result)]][i]) + 1:] #if the letter is found, remove it.
+    ##=============================================================MAIN ALGORITHM================================================================##
+    
+    for i in range(len(lines[c[len(result)]])): #range: length of the line at index (appropriate counter depending on how many words have already been found)
+        if word.find(lines[c[len(result)]][i]) >= 0: #if the i'th letter of the dictionary line at index (counter) is in the input word
+            word = word[0:word.find(lines[c[len(result)]][i])] + word[word.find(lines[c[len(result)]][i]) + 1:] #if the letter is found in the input word, remove it from input word.
         else:
-            failFlag = True
+            failFlag = True #if the for loop fails (i.e. the anagram combination doesn't work), set failFlag and break it.
             break
+    ##==========================================================================================================================================##
+    
     if failFlag:
-        failedFlag = True
         failFlag = False
         if c[len(result)] >= len(lines) - 1: #if the counter reached the end of lines, aka reached the end of the dict (-1 offset because the ++ hasn't happened yet, in else)
             if len(result) > 0: #if a result can be removed, then remove it
@@ -140,10 +147,9 @@ while True:
             c[len(result)] += 1
         word = lastWord[len(result)]
     elif not failFlag:
-        failedFlag = False
-        result.append(lines[c[len(result)]])
-        if len(c) == len(result): c.append(0) #add another index to the counter list
-        else: c[len(result)] = 0 #if the index exists, reset it.
+        result.append(lines[c[len(result)]]) #add the working word to the results list
+        if len(c) == len(result): c.append(0) #add another index to the counter list if it is needed
+        else: c[len(result)] = 0 #if the counter index exists, reset the counter.
         if "r" in args: c[len(result)] = random.randint(0, len(lines)) #if a random anagram is specified, randomize the indexer
         if len(lastWord) == len(result): lastWord.append(word)
         else: lastWord[len(result)] = word #if the index exists, use it
